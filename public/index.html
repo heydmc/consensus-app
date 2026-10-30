@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Consensus Search</title>
+  </head>
+  <body>
+    <main>
+      <h1>Consensus Search</h1>
+      <form id="search-form">
+        <label for="query">Search query</label>
+        <input id="query" name="query" type="search" required />
+        <button type="submit">Search</button>
+      </form>
+      <pre id="results" aria-live="polite"></pre>
+    </main>
+    <script>
+      const form = document.querySelector('#search-form');
+      const results = document.querySelector('#results');
+
+      async function executeSearch(userQuery) {
+        results.textContent = 'Searching...';
+
+        try {
+          const params = new URLSearchParams({
+            query: userQuery,
+            page_size: '10',
+          });
+          const response = await fetch(`/api/search?${params}`);
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || `Search failed (${response.status})`);
+          }
+
+          console.log('Results from Consensus:', data);
+          results.textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+          console.error('Fetch error:', error);
+          results.textContent = error.message;
+        }
+      }
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        executeSearch(form.elements.query.value.trim());
+      });
+    </script>
+  </body>
+</html>
